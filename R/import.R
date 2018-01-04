@@ -88,6 +88,8 @@ globalized_tracks = create_trajectories(globalized_json)
 
 
 
+movpat = c()
+
 ti=0
 
 for(tri in 1:(length(globalized_json)-1))
@@ -100,11 +102,17 @@ for(tri in 1:(length(globalized_json)-1))
     
     egtrack = globalized_tracks[[ti]]
     
-    
     source("find_stops.R")
     if(dim(bpts_df)[1]==0){
       next
     }
+    
+    
+    #mov_pat = cbind(mov_pat,"trk"=rep(ti,dim(mov_pat)[1]))
+    
+    movpat[[paste("t0",ti,sep="")]] = mov_pat
+    
+    #movpat = rbind(movpat,mov_pat)
     
     
     globalized_json[[tri]][[trj]]$stop = rep(1,dim(globalized_json[[tri]][[trj]])[1])
@@ -146,5 +154,10 @@ newd = toJSON(l)
 
 writeLines(newd, paste("../statvis","/data/out.json",sep="") )
 
+xxx = c()
+xxx$tracks= movpat
 
+#meta = toJSON(unname(split(xxx, 1:nrow(xxx))))
+meta = toJSON(xxx)
+writeLines(meta, paste("../statvis","/data/meta.json",sep="") )
 #cond <- sapply(l, function(x) x$time >= "2017-12-29 15:23:00 CET" & x$time <= "2017-12-29 15:23: CET" )

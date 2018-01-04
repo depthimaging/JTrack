@@ -4,9 +4,9 @@ import  java.lang.Object;
 // Example of Reading from JSON and Visualisation of Visitor Tracks
 // 1.2 / p3.3
 
-String filename="test.json";                    // temp. filename
+String filename="out.json",metadata="meta.json";                    // temp. filename
 Boolean isInit = false;
-JSONObject json;
+JSONObject json,meta;
 
 JSONObject moment;
 
@@ -26,6 +26,8 @@ String[][] timestamps;
 
 int[] lenght;
 float[] h_mid;
+
+float [][]tmeta;
 
 String start_time, end_time;                    // Starting and ending time of all tracks in the file
 
@@ -129,6 +131,14 @@ void mousePressed() {
   if (curTrk >= lenght.length) {
     curTrk = 0;
   }
+  if(curTrk<9) {
+    int x = curTrk+1;
+    loadMetadata("t0"+x);
+  }
+   else {
+     int x = curTrk+1;
+     loadMetadata("t0"+curTrk);
+   }
   println("cur: ", curTrk);
 }
 
@@ -143,9 +153,10 @@ boolean overRect(int x, int y, int width, int height) {
 }
 
 void pieChart(float diameter, int[] data) {
-  float lastAngle = 4.7;
-  boolean moving = false;
 
+  float lastAngle = 4.7;
+  float startAngle = lastAngle;
+  boolean moving = false;
 
   noStroke();
   for (int i = 0; i < data.length; i++) {
@@ -155,9 +166,21 @@ void pieChart(float diameter, int[] data) {
       fill(255, 0, 0);
     }
     moving = !moving;
-
-    arc(pieX, pieY, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
+    if(data[i]==0) {
+       data[i] = 1;
+    }
+    
+    if(i == data.length-1){
+      arc(pieX, pieY, diameter, diameter, lastAngle, startAngle);
+    }
+    else {
+      arc(pieX, pieY, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
+    }
+    
     lastAngle += radians(data[i]);
+    //14.4
+    //342
+    //3.6
   }
   //image(timebg, pieX-126,pieY-126);
 }
@@ -336,18 +359,92 @@ int getStopTimes(int i) {
   
   println(" the angles[: ", i, "] : ", angles[i]);
 
-  int[] newangles = new int[subseq];
-  for (k=0; k<subseq; k++) {
-    newangles[k] = angles[i][k];
+  int counter = tmeta.length;
+  println("counter= ",counter);
+  int[] newangles = new int[counter];
+  
+  for (k=0; k<counter; k++) {
+    println("k= ",k);
+    newangles[k] = (int) (tmeta[k][4] * 3.6) ;
   }
+
+
+  println(" newangles ----- ", newangles[0]);
+  println(" newangles ----- ", newangles[1]);
+  println(" newangles ----- ", newangles[2]);
+  println(" newangles size----- ", newangles.length);
+  
+  //println(" newangles ----- ", newangles[3]);
+  //println(" newangles ----- ", newangles[4]);
+  
+
+
 
   pieChart(250, newangles);
   return totalStop;
 }
+
+void loadMetadata(String trk){
+
+  try {
+    
+  meta = loadJSONObject(metadata);  
+  JSONObject s = meta.getJSONObject("tracks");
+  
+  println("  ppppaream: ",trk);
+  JSONArray track = s.getJSONArray(trk);  
+  tmeta = new float[track.size()][5];
+  
+  for (int i = 0; i < track.size(); i++) {
+     try {
+       tmeta[i][0] = track.getJSONObject(i).getInt("stop");
+       tmeta[i][1] = track.getJSONObject(i).getInt("nop");
+       tmeta[i][2] = track.getJSONObject(i).getInt("perc");
+       tmeta[i][3] = track.getJSONObject(i).getInt("dur");
+       tmeta[i][4] = track.getJSONObject(i).getInt("percentage");
+       
+       //println(track.getJSONObject(i).getInt("nop"));
+       //track.getJSONArray(i);
+       //println("neww json st nop: ",s.getJSONObject(i).getInt("trk"));
+       
+       //JSONArray st = s.getJSONArray(i);
+       //tmeta[i] = new float[st.size()];
+       
+       
+       //tmeta[i][j] = 
+       
+       //for (int j = 0; j < st.size(); j++) {
+       //  JSONObject each = st.getJSONObject(j);
+       //  tmeta[j][j] = 
+       //  println("neww json st nop: ",each.getInt("nop"));
+       //}
+     } catch (Exception e){
+     }
+     
+  }
+
+
+  println("ads--------- tmetaaaaa  "+tmeta[1][0]);
+  println("ads--------- tmetaaaaa  "+tmeta[1][1]);
+  println("ads--------- tmetaaaaa  "+tmeta[1][2]);
+  println("ads--------- tmetaaaaa  "+tmeta[1][3]);
+  println("ads--------- tmetaaaaa  "+tmeta[1][4]);
+  
+  
+  println("ads--------- tmetaaaaa  "+tmeta[2][0]);
+  println("ads--------- tmetaaaaa  "+tmeta[2][1]);
+  println("ads--------- tmetaaaaa  "+tmeta[2][2]);
+  println("ads--------- tmetaaaaa  "+tmeta[2][3]);
+  println("ads--------- tmetaaaaa  "+tmeta[2][4]);
+  
+ } catch (Exception e){
+     }
+}
+
 void loadData() {
-
+  
   json = loadJSONObject(filename);
-
+  
   int noTracks = json.size();
   tracks = new JSONArray[noTracks];
 
