@@ -5,7 +5,7 @@ library('jsonlite')
 #each sub-lists for each camera
 json_data = list(c1 = list(), c2 = list(), c4 = list())
 
-files = list.files(path = "field/", pattern = "*.json", recursive = TRUE, full.names = TRUE)
+files = list.files(path = "ex/", pattern = "*.json", recursive = TRUE, full.names = TRUE)
 
 for(filename_w_path in files)
 {
@@ -93,17 +93,12 @@ plot(vx,vy)
 
 movpat = c()
 
-ti=0
-
-for(tri in 1:(length(globalized_json)-1))
+for(tri in 1:(length(globalized_tracks)))
 {
-  for(trj in 1:length(globalized_json[[tri]]))
-  {
-    ti=ti+1
-    if(ti==2 || ti==9)
+    if(dim(globalized_tracks[[tri]])<10)
       next
-    
-    egtrack = globalized_tracks[[ti]]
+    print(paste('track:',tri))
+    egtrack = globalized_tracks[[tri]]
     
     source("find_stops.R")
     if(dim(bpts_df)[1]==0){
@@ -113,19 +108,18 @@ for(tri in 1:(length(globalized_json)-1))
     
     #mov_pat = cbind(mov_pat,"trk"=rep(ti,dim(mov_pat)[1]))
     
-    movpat[[paste("t0",ti,sep="")]] = mov_pat
+    movpat[[paste("t0",tri,sep="")]] = mov_pat
     
     #movpat = rbind(movpat,mov_pat)
     
     
-    globalized_json[[tri]][[trj]]$stop = rep(1,dim(globalized_json[[tri]][[trj]])[1])
+    globalized_tracks[[tri]]@data$stop = rep(1,dim(globalized_tracks[[tri]])[1])
     for(k in 1:(dim(bpts_df)[1]))  
     {
-      globalized_json[[tri]][[trj]]$stop[bpts_df[k,1]:bpts_df[k,2]]=0
+      globalized_tracks[[tri]]@data$stop[bpts_df[k,1]:bpts_df[k,2]]=0
+      
       
     }
-    print( paste("aafsesef: ",toString(trj)))
-  }
   
 }  
 

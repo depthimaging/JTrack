@@ -1,6 +1,6 @@
 library(sp)
 
-egtrack = globalized_tracks[[1]]
+#egtrack = globalized_tracks[[11]]
 
 stop = c(0)
 nop = c(0)
@@ -77,13 +77,57 @@ find_diffs_it = function(xyb)
 }
 
 
+find_diffs_ir = function(xyb)
+{
+  xyb = bpds
+  flag = TRUE
+  breaklist = c()
+  x = 1
+  dimx = dim(xyb)[1]
+  while(x < dimx)
+  {
+    z = 1
+    while(xyb[x,3] == xyb[x+1,3] && x < dimx)
+    {
+      x = x+1
+      if(x >= dimx)
+      {
+        flag = FALSE
+      }
+    }
+    breaklist = append(breaklist, x)
+    if(!flag) break
+    x = x+1
+    if(x >= dimx) flag = FALSE
+    while(x+1 <= dimx && xyb[x,3] == xyb[x+1,3])
+    {
+      x = x+1
+      if(x >= dimx)
+      {
+        flag = FALSE
+      }
+    }
+    if(flag)
+    {
+      x = x+1
+      breaklist = append(breaklist, x)
+    } else {
+      breaklist = append(breaklist, dimx)
+    }
+  }
+  
+  
+  return(breaklist[1:length(breaklist)-1])
+}
+
+
 stop_it = function(xyb)
 {
   
   #mov_pat = rbind(mov_pat, c(4,4,4))
   #mov_pat[2,1] = 2
   #bpds[1,3] = 1
-  #xyb = bpds
+  xyb = bpds
   
   dimx = dim(xyb)[1]
   x = 0
@@ -145,18 +189,60 @@ trast = data.frame()
 
 bpts = find_diffs_it(bpds)
 
+flag = FALSE
+xxx = c()
+k=1
+for(i in 1:length(bpts)) {
+  xxx[k] = bpts[i]
+  k = k+1
+  if(flag == TRUE) {
+    xxx[k] = bpts[i]
+    k = k+1
+    flag = FALSE
+  }
+  
+  if(i %% 2==0 && i<length(bpts)) {
+    xxx[k] = bpts[i]
+    flag = TRUE
+    k = k+1
+  }
+}
 
-no_of_stop = length(bpts)/2
+#bpts = c(bpts,c(22))
+
+no_of_stop = round(length(bpts)/2,0)
 bpts_mat = matrix(data = bpts, ncol = 2, byrow = TRUE, dimnames = list(c(), c("start", "end")))
 bpts_df = as.data.frame(bpts_mat)
 duration = vector(length = dim(bpts_df)[1])
-bbox = list()
-##plot(egtrack, type = 'b')
+
 for(i in 1:dim(bpts_df)[1])
 {
-  #duration[i] = difftime(egtrack@endTime[bpts_df$end[i]], egtrack@endTime[bpts_df$start[i]], units = "secs")
-  #bbox[[i]] = bbox(coordinates(egtrack)[bpts_df$start[i]:bpts_df$end[i],])
-  #rect(xleft = bbox[[i]][1,1], ybottom = bbox[[i]][2,1], xright = bbox[[i]][1,2], ytop = bbox[[i]][2,2], col = rgb(1,0,0,0.1), border = TRUE, lwd = 2)
+  duration[i] = difftime(egtrack@endTime[bpts_df$end[i]], egtrack@endTime[bpts_df$start[i]], units = "secs")
 }
-#bbox
-#bpts_df = cbind(bpts_df, as.data.frame(duration))
+bpts_df = cbind(bpts_df, as.data.frame(duration))
+
+
+total_duration = as.numeric(difftime(egtrack@endTime[length(egtrack@endTime)],egtrack@endTime[1], units="secs"))
+  
+x_mat = matrix(data = xxx, ncol = 2, byrow = TRUE, dimnames = list(c(), c("start", "end")))
+x_df = as.data.frame(x_mat)
+duration = vector(length = dim(x_df)[1])
+percentage = vector(length = dim(x_df)[1])
+for(i in 1:dim(x_df)[1])
+{
+  duration[i] = difftime(egtrack@endTime[x_df$end[i]], egtrack@endTime[x_df$start[i]], units = "secs")
+  
+  #rounding down the percentage
+  percentage[i] = round(100* duration[i] / total_duration, 0)
+}
+# this is to normalize the rounding down
+percentage[i] = percentage[i] + 100 - sum(percentage)
+
+x_df = cbind(x_df, as.data.frame(duration))
+x_df = cbind(x_df, as.data.frame(percentage))
+
+duration = vector(length = dim(x_df)[1])
+
+v = rep(0:1,dim(x_df)[1])
+    
+x_df = cbind(x_df, "stop"=v[1:dim(x_df)[1]])

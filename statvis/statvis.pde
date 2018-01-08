@@ -4,7 +4,7 @@ import  java.lang.Object;
 // Example of Reading from JSON and Visualisation of Visitor Tracks
 // 1.2 / p3.3
 
-String filename="out.json",metadata="meta.json";                    // temp. filename
+String filename="test.json",metadata="meta.json";                    // temp. filename
 Boolean isInit = false;
 JSONObject json,meta;
 
@@ -359,28 +359,31 @@ int getStopTimes(int i) {
   
   println(" the angles[: ", i, "] : ", angles[i]);
 
-  int counter = tmeta.length;
-  println("counter= ",counter);
-  int[] newangles = new int[counter];
+  try {
+    
+    int counter = tmeta.length;
+    println("counter= ",counter);
+    int[] newangles = new int[counter];
+    
+    for (k=0; k<counter; k++) {
+      println("k= ",k);
+      newangles[k] = (int) (tmeta[k][4] * 3.6) ;
+    }
   
-  for (k=0; k<counter; k++) {
-    println("k= ",k);
-    newangles[k] = (int) (tmeta[k][4] * 3.6) ;
-  }
-
-
-  println(" newangles ----- ", newangles[0]);
-  println(" newangles ----- ", newangles[1]);
-  println(" newangles ----- ", newangles[2]);
-  println(" newangles size----- ", newangles.length);
   
-  //println(" newangles ----- ", newangles[3]);
-  //println(" newangles ----- ", newangles[4]);
+    println(" newangles ----- ", newangles[0]);
+    println(" newangles ----- ", newangles[1]);
+    println(" newangles ----- ", newangles[2]);
+    println(" newangles size----- ", newangles.length);
+    
+    //println(" newangles ----- ", newangles[3]);
+    //println(" newangles ----- ", newangles[4]);
+    
   
-
-
-
-  pieChart(250, newangles);
+  
+  
+    pieChart(250, newangles);
+  } catch (Exception e){}
   return totalStop;
 }
 
