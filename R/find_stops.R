@@ -1,6 +1,6 @@
 library(sp)
 
-#egtrack = globalized_tracks[[5]]
+egtrack = globalized_tracks[[1]]
 
 stop = c(0)
 nop = c(0)
@@ -129,6 +129,19 @@ stop_it = function(xyb)
 }
 
 mov_pat = stop_it(bpds)
+
+
+
+
+trast = data.frame()
+
+# covered exhibits
+# e1 attraction power e1_ap
+# e1 holding power e1_hp
+# e1 enjoyment power e1_ap
+
+#columns(trast) = c("cov_ex","","","","","","",)
+
 
 bpts = find_diffs_it(bpds)
 

@@ -86,7 +86,10 @@ globalized_tracks = create_trajectories(globalized_json)
 
 
 
-
+source("coordinates.R")
+plot(globalized_tracks[[26]],type="l")
+par(new=TRUE)
+plot(vx,vy)
 
 movpat = c()
 

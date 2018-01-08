@@ -50,5 +50,6 @@ tv_m = find_mids(tv_s, tv_e)
 
 eb_m = find_mids(eb_s, eb_e)
 
-
+vx = c(p1_m[1],pc_m[1],p2_m[1],tv_m[1],p3_m[1],eb_m[1])
+vy = c(p1_m[2],pc_m[2],p2_m[2],tv_m[2],p3_m[2],eb_m[2])
 

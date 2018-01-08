@@ -476,7 +476,7 @@ void loadData() {
         // fist and last time stamps
         if ((i==0) & (j==0)) start_time=moment.getString("time").substring(0, 11);                 
         if ((i==lenght[j]-1) & (j==0)) end_time=moment.getString("time").substring(0, 11);
-        if ((i==lenght[j]-1) & (j!=0)) println ("!!");
+        //if ((i==lenght[j]-1) & (j!=0)) println ("!!");
         float x=moment.getFloat("x");                                  
         float y=moment.getFloat("y");
         timestamps[j][i]=moment.getString("time").substring(0, 11);
