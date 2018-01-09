@@ -108,7 +108,7 @@ for(tri in 1:(length(globalized_tracks)))
     
     #mov_pat = cbind(mov_pat,"trk"=rep(ti,dim(mov_pat)[1]))
     
-    movpat[[paste("t0",tri,sep="")]] = mov_pat
+    movpat[[paste("t0",tri,sep="")]] = x_df
     
     #movpat = rbind(movpat,mov_pat)
     

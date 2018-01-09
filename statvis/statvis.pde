@@ -401,26 +401,11 @@ void loadMetadata(String trk){
   for (int i = 0; i < track.size(); i++) {
      try {
        tmeta[i][0] = track.getJSONObject(i).getInt("stop");
-       tmeta[i][1] = track.getJSONObject(i).getInt("nop");
-       tmeta[i][2] = track.getJSONObject(i).getInt("perc");
-       tmeta[i][3] = track.getJSONObject(i).getInt("dur");
+//       tmeta[i][1] = track.getJSONObject(i).getInt("nop");
+//       tmeta[i][2] = track.getJSONObject(i).getInt("perc");
+       tmeta[i][3] = track.getJSONObject(i).getInt("duration");
        tmeta[i][4] = track.getJSONObject(i).getInt("percentage");
        
-       //println(track.getJSONObject(i).getInt("nop"));
-       //track.getJSONArray(i);
-       //println("neww json st nop: ",s.getJSONObject(i).getInt("trk"));
-       
-       //JSONArray st = s.getJSONArray(i);
-       //tmeta[i] = new float[st.size()];
-       
-       
-       //tmeta[i][j] = 
-       
-       //for (int j = 0; j < st.size(); j++) {
-       //  JSONObject each = st.getJSONObject(j);
-       //  tmeta[j][j] = 
-       //  println("neww json st nop: ",each.getInt("nop"));
-       //}
      } catch (Exception e){
      }
      
