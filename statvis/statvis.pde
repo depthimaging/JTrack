@@ -107,6 +107,9 @@ PImage timebg;
 PImage jelly;
 PGraphics pg;
 
+PImage holdimg,attimg,enjimg;
+
+
 void setup() {
   loadData();
   fullScreen();
@@ -123,6 +126,11 @@ void setup() {
 void reset() {
   rect(room_oX, room_oY, wd, ht);
   jelly = loadImage("b2pplan.jpg");
+  
+  holdimg = loadImage("holdimg.png");
+  attimg = loadImage("attimg.png");
+  enjimg = loadImage("enjimg.png");
+  
   jelly.resize(width, height);
   background(jelly);
   loadData();  
@@ -280,8 +288,36 @@ void drawInterface() {
   
   
   // items panel
-  fill(1);
-  rect(20, oY-40, 800, 250);
+  noFill();
+  int panelX = 20, panelY = 400;
+  rect(panelX, panelY, 800, 470);
+  
+  noStroke();
+  
+  int nItems = 5;
+  for(int j=0;j<nItems;j++) {
+    fill(0,40,200);
+    rect(panelX+4, panelY+6+((j+1)*75), 790, 65);
+    
+    fill(255);
+    ellipse(panelX+40, panelY+36+((j+1)*75), 50, 50);
+    fill(100);
+    text(j+1,panelX+32,panelY+45+((j+1)*75));
+    
+    fill(255);
+    text("20",panelX+150,panelY+45+((j+1)*75));
+    text("20",panelX+400,panelY+45+((j+1)*75));
+    text("20",panelX+650,panelY+45+((j+1)*75));
+    
+    int holdx = 150, holdy = panelY+10, holdw=60, holdh=60;
+    int attx = 400, atty = panelY+10, attw=holdw, atth=holdh;
+    int enjx = 640, enjy = panelY+10, enjw=holdw, enjh=holdh;
+    
+    image(attimg, attx, atty, attw, atth);
+    image(holdimg, holdx, holdy, holdw, holdh);
+    image(enjimg, enjx, enjy, enjw, enjh);
+
+  }
 }
 
 void draw() {
@@ -315,12 +351,6 @@ void draw() {
 
       ellipse(oX+xes, oY-yes, 10, 10);
 
-      //fill(6);
-      //rect(cx, cy-30, 300, 40);
-      //fill(255);
-      //textSize(16);
-      //text(" x= "+xes+" , y= "+yes, cx, cy);
-
       count[i]++;
     } 
     catch (Exception e) {
@@ -337,7 +367,6 @@ void draw() {
 
 
   textSize(28);
-  //angles[i] = new int[]{ 90, 90,90,90 };
   
 
   int total = lenght[i]/2;
