@@ -5,7 +5,7 @@ library('jsonlite')
 #each sub-lists for each camera
 json_data = list(c1 = list(), c2 = list(), c4 = list())
 
-files = list.files(path = "ex/", pattern = "*.json", recursive = TRUE, full.names = TRUE)
+files = list.files(path = "field/", pattern = "*.json", recursive = TRUE, full.names = TRUE)
 
 for(filename_w_path in files)
 {

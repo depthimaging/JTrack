@@ -1,6 +1,6 @@
 library(sp)
 
-#egtrack = globalized_tracks[[11]]
+egtrack = globalized_tracks[[5]]
 
 stop = c(0)
 nop = c(0)
@@ -127,7 +127,7 @@ stop_it = function(xyb)
   #mov_pat = rbind(mov_pat, c(4,4,4))
   #mov_pat[2,1] = 2
   #bpds[1,3] = 1
-  xyb = bpds
+  #xyb = bpds
   
   dimx = dim(xyb)[1]
   x = 0
@@ -192,22 +192,24 @@ bpts = find_diffs_it(bpds)
 flag = FALSE
 xxx = c()
 k=1
-for(i in 1:length(bpts)) {
-  xxx[k] = bpts[i]
-  k = k+1
-  if(flag == TRUE) {
+if(length(bpts)>0) {
+  for(i in 1:length(bpts)) 
+    {
     xxx[k] = bpts[i]
     k = k+1
-    flag = FALSE
-  }
-  
-  if(i %% 2==0 && i<length(bpts)) {
-    xxx[k] = bpts[i]
-    flag = TRUE
-    k = k+1
+    if(flag == TRUE) {
+      xxx[k] = bpts[i]
+      k = k+1
+      flag = FALSE
+    }
+    
+    if(i %% 2==0 && i<length(bpts)) {
+      xxx[k] = bpts[i]
+      flag = TRUE
+      k = k+1
+    }
   }
 }
-
 #bpts = c(bpts,c(22))
 
 no_of_stop = round(length(bpts)/2,0)

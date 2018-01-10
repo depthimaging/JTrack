@@ -35,7 +35,7 @@ int text_oX = 30;
 int text_oY = 70;
 
 int pieX = 200;
-int pieY = 400;
+int pieY = 450;
 
 
 //int oX =900;
@@ -60,9 +60,33 @@ color rectColor = color(222);
 color rectHighlight = color(100,100,100);
 boolean rectOver1 = false;
 boolean rectOver2 = false;
-
+// heatmap button
+int heatX = 30, heatY = rectY1+ 60;      // Position of square button
+int heatW = 170;     // Diameter of rect
+int heatH = 35;     // Diameter of rect
+color heatColor = color(222);
+color heatHighlight = color(100,100,100);
+boolean heatOver = false;
+//
+// normal button
+int norX = 250, norY = heatY;      // Position of square button
+int norW = 170;     // Diameter of rect
+int norH = 35;     // Diameter of rect
+color norColor = color(222);
+color norHighlight = color(100,100,100);
+boolean norOver = false;
 // End ofinterface. buttons
 //---------------------------------
+
+
+//---------------------------------
+// heatmap
+//---------------------------------
+float[][] interp_array;
+boolean showHeatMap = false;
+// End of heatmap
+//---------------------------------
+
 
 int circleX, circleY;  // Position of circle button
 color currentColor;
@@ -80,24 +104,81 @@ int nstops = 0;
 PImage timebg;
 
 
+PImage jelly;
+PGraphics pg;
 
 void setup() {
   loadData();
   fullScreen();
   reset();
+  // heatmap
+  int heatW = 880, heatH = 870;
+  
+  pg = createGraphics(heatW, heatH);
+  interp_array = new float[heatW][heatH];
+  makeArray();  
 }
+
 
 void reset() {
   rect(room_oX, room_oY, wd, ht);
-  PImage jelly = loadImage("b2pplan.jpg");
+  jelly = loadImage("b2pplan.jpg");
   jelly.resize(width, height);
   background(jelly);
-  loadData();
+  loadData();  
 }
 
 
+// Fill array with Perlin noise (smooth random) values
+void makeArray() {
+  for (int c = 0; c < interp_array.length; c++) {
+    for (int r = 0; r < interp_array[c].length; r++) {
+      // Range is 24.8 - 30.8      
+      interp_array[c][r] = 24.8 + 5.0 * noise(r * 0.01, c * 0.01);
+    }
+  }
+}
 
-void pieChart(float diameter, int[] data,boolean moving) {
+
+void applyColor() {  // Generate the heat map
+  
+  pushStyle();
+
+  pg.beginDraw();
+
+  colorMode(HSB, 1, 1, 1);
+  pg.loadPixels();
+  int p = 0;
+  for (int c = 0; c < interp_array.length; c++) {
+    for (int r = 0; r < interp_array[c].length; r++) {
+      // Get the heat map value 
+      float value = interp_array[c][r];
+      // Constrain value to acceptable range.
+      value = constrain(value, 25, 30);
+      // Map the value to the hue
+      // 0.2 blue
+      // 1.0 red
+      value = map(value, 25, 30, 0.2, 1.0);
+      //println("value: ", value);
+      //if (value < 0.5) {
+      //  pg.pixels[p++] = color(value, 0.9, 1);  
+      //} else {
+      //p++;
+      //}
+      pg.pixels[p++] = color(value, 0.9, 1);
+      
+    }
+  }
+  pg.updatePixels();
+  
+  image(pg, 840, 25);
+  pg.endDraw();
+  
+  popStyle();
+  
+}
+
+void pieChart(float diameter, int[] data,boolean moving, int ox, int oy) {
 
   float lastAngle = 4.7;
   float startAngle = lastAngle;
@@ -113,11 +194,10 @@ void pieChart(float diameter, int[] data,boolean moving) {
     if(data[i]==0) {
        data[i] = 1;
     }
-    arc(pieX, pieY, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
+    arc(ox+600, oy+30, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
 
     lastAngle += radians(data[i]);
   }
-  //image(timebg, pieX-126,pieY-126);
 }
 
 void drawSummary(int curtrkColor) {
@@ -132,52 +212,84 @@ void drawSummary(int curtrkColor) {
 
   noFill();
   stroke(255);
-  rect(text_oX,text_oY+40,390,60);
+  rect(text_oX,text_oY+100,390,60);
   
 }
 
 void drawMov(int total, int nstops, int oX, int oY) {
  
   fill(255); 
-  text("Total time: ", oX, oY);
-  text(total+" seconds", oX+200, oY);
+  text("Total time: ", oX, oY+60);
+  text(total+" seconds", oX+200, oY+60);
 
   fill(0, 255, 0);
-  text("Move: ", oX, oY+60);
+  text("Move: ", oX, oY+130);
   fill(255); 
-  text(total-nstops+ " s", oX+100, oY+60);
+  text(total-nstops+ " s", oX+100, oY+130);
 
   fill(255, 0, 0);
-  text("Stop: ", oX+200, oY+60);
+  text("Stop: ", oX+200, oY+130);
   fill(255); 
-  text(nstops+ " s", oX+300, oY+60);
+  text(nstops+ " s", oX+300, oY+130);
 
+  getStopTimes(curTrk,oX,oY);
 }
-void draw() {
-  update(mouseX, mouseY);
+
+void drawInterface() {
 
   color curtrkColor = color( (curTrk%3)* 255, ((curTrk+1)%3) * 255, ((curTrk+2)%3) * 255 );
 
-  drawSummary(curtrkColor);
   
-  stroke(rectColor);
-  fill(27,35,48);
+  fill(rectHighlight);
   if (rectOver1) {
-    fill(rectHighlight);
+    fill(rectColor);
   }
   rect(rectX1, rectY1, rectSizeW, rectSizeH);
-  fill(27,35,48);
   
+  fill(rectHighlight);  
   if(rectOver2){
-    fill(rectHighlight); 
+    fill(rectColor); 
   }
   rect(rectX2, rectY2, rectSizeW, rectSizeH);
   
-  fill(curtrkColor); 
+  fill(0);  
   textSize(32);
   text("<", rectX1+12, rectY1+27);
   text(">", rectX2+12, rectY2+27);
 
+  // heatmap button
+  fill(rectHighlight);  
+  if(heatOver){
+    fill(rectColor); 
+  }
+  rect(heatX, heatY, heatW, heatH);
+  textSize(28);
+  fill(255,255,255);
+  text("Heat Map", heatX+10, heatY+27);
+  
+  
+  // normal map button
+  fill(norHighlight);  
+  if(norOver){
+    fill(norColor); 
+  }
+  rect(norX, norY, norW, norH);
+  textSize(28);
+  fill(255,255,255);
+  text("Traj. Map", norX+10, norY+27);
+  
+  
+  // items panel
+  fill(1);
+  rect(20, oY-40, 800, 250);
+}
+
+void draw() {
+  update(mouseX, mouseY);
+  color curtrkColor = color( (curTrk%3)* 255, ((curTrk+1)%3) * 255, ((curTrk+2)%3) * 255 );
+  drawSummary(curtrkColor);
+  
+  drawInterface();
 
   int i = curTrk;
 
@@ -190,7 +302,7 @@ void draw() {
   //color trkColor = color( (i%3)* 255, ((i+1)%3) * 255, ((i+2)%3) * 255 );
 
   fill(curtrkColor);
-  if (count[i]<lenght[i]) {
+  if (count[i]<lenght[i] && !showHeatMap) {
 
     stroke(curtrkColor);
 
@@ -203,16 +315,20 @@ void draw() {
 
       ellipse(oX+xes, oY-yes, 10, 10);
 
-      fill(6);
-      rect(cx, cy-30, 300, 40);
-      fill(255);
-      textSize(16);
-      text(" x= "+xes+" , y= "+yes, cx, cy);
+      //fill(6);
+      //rect(cx, cy-30, 300, 40);
+      //fill(255);
+      //textSize(16);
+      //text(" x= "+xes+" , y= "+yes, cx, cy);
 
       count[i]++;
     } 
     catch (Exception e) {
     };
+  } 
+  
+  if(showHeatMap == true) {
+    applyColor();
   }
   delay(50);
   //}
@@ -222,7 +338,7 @@ void draw() {
 
   textSize(28);
   //angles[i] = new int[]{ 90, 90,90,90 };
-  getStopTimes(i);
+  
 
   int total = lenght[i]/2;
 
@@ -253,7 +369,7 @@ void init2(int i, int no_elements) {
   timestamps[i]=new String[no_elements];
 }
 
-void getStopTimes(int i) {
+void getStopTimes(int i,int ox, int oy) {
   int k=0;
   try {    
     int counter = tmeta.length;
@@ -274,7 +390,7 @@ void getStopTimes(int i) {
     if(tmeta[1][0] == 1) {
       x = true;
     }
-    pieChart(250, newangles,x);
+    pieChart(250, newangles,x,ox,oy);
   } catch (Exception e){}
 }
 
@@ -370,6 +486,18 @@ void update(int x, int y) {
   } else {
     rectOver2 = false;
   }
+  
+  if ( overRect(heatX, heatY, heatW, heatH) ) {
+    heatOver = true;
+  } else {
+    heatOver = false;
+  }
+  
+  if ( overRect(norX, norY, norW, norH) ) {
+    norOver = true;
+  } else {
+    norOver = false;
+  }
 }
 
 
@@ -401,9 +529,6 @@ void mousePressed() {
     curTrk = 0;
   }
   
-  if(doreset == true) {
-    reset();
-  }
   
   if(curTrk<9) {
     int x = curTrk+1;
@@ -413,5 +538,18 @@ void mousePressed() {
      int x = curTrk+1;
      loadMetadata("t0"+curTrk);
    }
-  //println("cur: ", curTrk);
+   
+   if (heatOver) {
+     showHeatMap = true;
+     doreset = true;
+   }
+   
+   if (norOver) {
+     showHeatMap = false;
+     doreset = true;
+   }
+  
+  if(doreset == true) {
+    reset();
+  }
 }
