@@ -1,6 +1,6 @@
 library(sp)
 
-egtrack = globalized_tracks[[5]]
+#egtrack = globalized_tracks[[26]]
 
 stop = c(0)
 nop = c(0)
@@ -27,7 +27,7 @@ while(i < length_egtrack-1)
   i = i+1
 }
 
-egtrack_coords = coordinates(egtrack)[1:dim(egtrack)-1,]
+
 
 times = as.POSIXct(egtrack@sp$time[1:dim(egtrack)[1]-1])
 
@@ -245,6 +245,69 @@ x_df = cbind(x_df, as.data.frame(percentage))
 
 duration = vector(length = dim(x_df)[1])
 
+bpds[round((bpts_df[1,1]+bpts_df[1,2])/2,0),]
+
+
+
 v = rep(0:1,dim(x_df)[1])
     
 x_df = cbind(x_df, "stop"=v[1:dim(x_df)[1]])
+
+
+
+
+center = rep(0,length = dim(x_df)[1])
+
+a = x_df
+
+center = round((a[,1]+a[,2])/2,0)
+cenX = bpds[round((a[,1]+a[,2])/2,0),1]
+cenY = bpds[round((a[,1]+a[,2])/2,0),2]
+
+x_df$cenX = cenX
+x_df$cenY = cenY
+
+
+
+source("coordinates.R")
+
+x2 = data.frame("x"=item[,2],"y"=item[,3])
+
+library("fields")
+
+i=1
+it = item[,2:3]
+
+for(i in 1:dim(x_df)[1])
+{
+  
+  if(x_df$stop[i]==1)
+  {
+    
+    x1 = data.frame("x"= rep(x_df$cenX[i],dim(item)[1]) ,"y"=rep(x_df$cenY[i],dim(item)[1]))
+    x2 = item[,2:3]
+    
+    dist = rdist.vec(x1, x2)
+    
+    closest_item_index = which.min(dist)
+  
+    closest_item_name = as.character(item[closest_item_index,1])
+    
+    closest_item_x = item[closest_item_index,2]
+    closest_item_y = item[closest_item_index,3]
+    
+    x_df$item[i] = closest_item_name
+    x_df$item_x[i] = closest_item_x
+    x_df$item_y[i] = closest_item_y
+  }
+  else {
+    x_df$item[i] = 0
+    x_df$item_x[i] = 0
+    x_df$item_y[i] = 0
+   
+  }
+  
+  
+}
+
+

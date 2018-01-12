@@ -115,7 +115,7 @@ void setup() {
   fullScreen();
   reset();
   // heatmap
-  int heatW = 880, heatH = 870;
+  int heatW = 870, heatH = 870;
   
   pg = createGraphics(heatW, heatH);
   interp_array = new float[heatW][heatH];
@@ -167,13 +167,7 @@ void applyColor() {  // Generate the heat map
       // 0.2 blue
       // 1.0 red
       value = map(value, 25, 30, 0.2, 1.0);
-      //println("value: ", value);
-      //if (value < 0.5) {
-      //  pg.pixels[p++] = color(value, 0.9, 1);  
-      //} else {
-      //p++;
-      //}
-      pg.pixels[p++] = color(value, 0.9, 1);
+      pg.pixels[p++] = color(value, 0.9, 1);      
       
     }
   }
