@@ -87,12 +87,12 @@ globalized_tracks = create_trajectories(globalized_json)
 
 
 source("coordinates.R")
-plot(globalized_tracks[[26]],type="l")
+plot(globalized_tracks[[12]],type="l")
 par(new=TRUE)
 plot(vx,vy)
 
 movpat = c()
-
+trackCount = 1
 for(tri in 1:(length(globalized_tracks)))
 {
     if(dim(globalized_tracks[[tri]])<10)
@@ -100,34 +100,31 @@ for(tri in 1:(length(globalized_tracks)))
     print(paste('track:',tri))
     egtrack = globalized_tracks[[tri]]
     
-    source("find_stops.R")
-    if(dim(bpts_df)[1]==0){
-      next
-    }
-    
-    
-    #mov_pat = cbind(mov_pat,"trk"=rep(ti,dim(mov_pat)[1]))
-    
-    movpat[[paste("t0",tri,sep="")]] = x_df
-    
-    #movpat = rbind(movpat,mov_pat)
-    
-    
-    globalized_tracks[[tri]]@data$stop = rep(1,dim(globalized_tracks[[tri]])[1])
-    for(k in 1:(dim(bpts_df)[1]))  
-    {
-      globalized_tracks[[tri]]@data$stop[bpts_df[k,1]:bpts_df[k,2]]=0
+    if ( dim(egtrack@sp)[1] > 10) {
+     
+       bpts_df = data.frame()
       
+      source("find_stops.R")
+      if(dim(bpts_df)[1]==0){
+        next
+      }
       
+      movpat[[paste("t0",trackCount,sep="")]] = x_df
+      trackCount=trackCount+1
+      globalized_tracks[[tri]]@data$stop = rep(1,dim(globalized_tracks[[tri]])[1])
+      for(k in 1:(dim(bpts_df)[1]))  
+      {
+        globalized_tracks[[tri]]@data$stop[bpts_df[k,1]:bpts_df[k,2]]=0
+        
+        
+      }
     }
   
 }  
 
 
 l = c()
-
 trackCount = 1
-
 
 for(i in 1:(length(globalized_json)-1))
 {
@@ -135,8 +132,10 @@ for(i in 1:(length(globalized_json)-1))
   
   for(j in 1:length(globalized_json[[i]]))
   {
-    l[paste("t0",trackCount,sep="")] = globalized_json[[i]][j]
-    trackCount=trackCount+1
+    if ( dim(globalized_json[[i]][[j]])[1] > 10) {
+      l[paste("t0",trackCount,sep="")] = globalized_json[[i]][j]
+      trackCount=trackCount+1
+    }
   }
 }
 
@@ -158,3 +157,11 @@ xxx$tracks= movpat
 meta = toJSON(xxx)
 writeLines(meta, paste("../statvis","/data/meta.json",sep="") )
 #cond <- sapply(l, function(x) x$time >= "2017-12-29 15:23:00 CET" & x$time <= "2017-12-29 15:23: CET" )
+
+v = data.frame()
+for(i in 1:length(l)) {
+  v[i,1] =i
+  v[i,2] = dim(l[[i]])[1]
+  v[i,3] = dim(l[[i]])[1]/2
+}
+

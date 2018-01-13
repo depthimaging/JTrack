@@ -1,21 +1,12 @@
 library(sp)
 
-#egtrack = globalized_tracks[[26]]
-
-stop = c(0)
-nop = c(0)
-perc = c(0)
-dur = c(0)
-
-
-mov_pat = data.frame(stop,nop,perc,dur)
-
+#egtrack = globalized_tracks[[6]]
 
 
 length_egtrack = dim(egtrack)[1]
 bool_stop = vector(length = length_egtrack-1)
 dist_window_m = 0.5
-#Temporal window = 1.5 seconds
+
 i = 2
 while(i < length_egtrack-1)
 {
@@ -27,7 +18,7 @@ while(i < length_egtrack-1)
   i = i+1
 }
 
-
+egtrack_coords = coordinates(egtrack)[1:dim(egtrack)-1,]
 
 times = as.POSIXct(egtrack@sp$time[1:dim(egtrack)[1]-1])
 
@@ -35,49 +26,7 @@ times = as.POSIXct(egtrack@sp$time[1:dim(egtrack)[1]-1])
 bpds = as.data.frame(cbind(egtrack_coords, bool_stop,times))
 
 
-
 find_diffs_it = function(xyb)
-{
-  flag = TRUE
-  breaklist = c()
-  x = 1
-  dimx = dim(xyb)[1]
-  while(x < dimx)
-  {
-    z = 1
-    while(xyb[x,3] == xyb[x+1,3] && x < dimx)
-    {
-      x = x+1
-      if(x >= dimx)
-      {
-        flag = FALSE
-      }
-    }
-    breaklist = append(breaklist, x)
-    if(!flag) break
-    x = x+1
-    if(x >= dimx) flag = FALSE
-    while(x+1 <= dimx && xyb[x,3] == xyb[x+1,3])
-    {
-      x = x+1
-      if(x >= dimx)
-      {
-        flag = FALSE
-      }
-    }
-    if(flag)
-    {
-      x = x+1
-      breaklist = append(breaklist, x)
-    } else {
-      breaklist = append(breaklist, dimx)
-    }
-  }
-  return(breaklist[1:length(breaklist)-1])
-}
-
-
-find_diffs_ir = function(xyb)
 {
   xyb = bpds
   flag = TRUE
@@ -115,80 +64,16 @@ find_diffs_ir = function(xyb)
       breaklist = append(breaklist, dimx)
     }
   }
-  
-  
   return(breaklist[1:length(breaklist)-1])
 }
 
-
-stop_it = function(xyb)
-{
-  
-  #mov_pat = rbind(mov_pat, c(4,4,4))
-  #mov_pat[2,1] = 2
-  #bpds[1,3] = 1
-  #xyb = bpds
-  
-  dimx = dim(xyb)[1]
-  x = 0
-  k = 2
-  
-  while(x< dimx){
-    x=x+1
-    cur = xyb[x,3]
-    
-    if(x==1) {
-      mov_pat = rbind(mov_pat,c(cur,1,10,xyb[x,4])) 
-      next
-    }
-    
-    prev = xyb[x-1,3]
-    
-    if(cur != prev){
-      t1 = mov_pat[k,4]
-      t2 = xyb[x,4]
-      res = difftime(as.POSIXct(t2,origin="1970-01-01"), as.POSIXct(t1,origin="1970-01-01"), units = "secs")
-      mov_pat[k,4] = res
-      k=k+1
-      mov_pat = rbind(mov_pat,c(cur,0,10,xyb[x,4]))
-    }
-      
-    mov_pat[k,2] = mov_pat[k,2] + 1
-    
-    if(x==dimx-1) {
-      t1 = mov_pat[k,4]
-      t2 = xyb[x,4]
-      res = difftime(as.POSIXct(t2,origin="1970-01-01"), as.POSIXct(t1,origin="1970-01-01"), units = "secs")
-      mov_pat[k,4] = res
-    }
-  }
-  mov_pat = data.frame(mov_pat[2:dim(mov_pat)[1],])
-
-  percentage = 100/sum(mov_pat$dur)
-  perc = mov_pat$dur * percentage
-  mov_pat = cbind(mov_pat,"percentage"=perc)
-  
-  
-  return(mov_pat)
-}
-
-mov_pat = stop_it(bpds)
-
-
-
-
-trast = data.frame()
-
-# covered exhibits
-# e1 attraction power e1_ap
-# e1 holding power e1_hp
-# e1 enjoyment power e1_ap
-
-#columns(trast) = c("cov_ex","","","","","","",)
-
-
 bpts = find_diffs_it(bpds)
 
+if(length(bpts)>0)
+{
+
+  
+  
 flag = FALSE
 xxx = c()
 k=1
@@ -224,6 +109,8 @@ for(i in 1:dim(bpts_df)[1])
 bpts_df = cbind(bpts_df, as.data.frame(duration))
 
 
+
+
 total_duration = as.numeric(difftime(egtrack@endTime[length(egtrack@endTime)],egtrack@endTime[1], units="secs"))
   
 x_mat = matrix(data = xxx, ncol = 2, byrow = TRUE, dimnames = list(c(), c("start", "end")))
@@ -243,40 +130,37 @@ percentage[i] = percentage[i] + 100 - sum(percentage)
 x_df = cbind(x_df, as.data.frame(duration))
 x_df = cbind(x_df, as.data.frame(percentage))
 
-duration = vector(length = dim(x_df)[1])
-
-bpds[round((bpts_df[1,1]+bpts_df[1,2])/2,0),]
-
+#duration = vector(length = dim(x_df)[1])
+#bpds[round((bpts_df[1,1]+bpts_df[1,2])/2,0),]
 
 
-v = rep(0:1,dim(x_df)[1])
+
+
+start_stop = xxx[1]==bpts[1]
+if(start_stop == TRUE) {
+  v = rep(1:0,dim(x_df)[1])
+} else {
+  v = rep(0:1,dim(x_df)[1])
+}
+
     
 x_df = cbind(x_df, "stop"=v[1:dim(x_df)[1]])
 
 
+#center = rep(0,length = dim(x_df)[1])
+#center = round((a[,1]+a[,2])/2,0)
 
 
-center = rep(0,length = dim(x_df)[1])
-
-a = x_df
-
-center = round((a[,1]+a[,2])/2,0)
-cenX = bpds[round((a[,1]+a[,2])/2,0),1]
-cenY = bpds[round((a[,1]+a[,2])/2,0),2]
-
-x_df$cenX = cenX
-x_df$cenY = cenY
-
+x_df$cenX = bpds[round((x_df[,1]+x_df[,2])/2,0),1]
+x_df$cenY = bpds[round((x_df[,1]+x_df[,2])/2,0),2]
 
 
 source("coordinates.R")
 
-x2 = data.frame("x"=item[,2],"y"=item[,3])
+
+x2 = item[,2:3]
 
 library("fields")
-
-i=1
-it = item[,2:3]
 
 for(i in 1:dim(x_df)[1])
 {
@@ -285,7 +169,7 @@ for(i in 1:dim(x_df)[1])
   {
     
     x1 = data.frame("x"= rep(x_df$cenX[i],dim(item)[1]) ,"y"=rep(x_df$cenY[i],dim(item)[1]))
-    x2 = item[,2:3]
+    
     
     dist = rdist.vec(x1, x2)
     
@@ -310,4 +194,7 @@ for(i in 1:dim(x_df)[1])
   
 }
 
-
+} else # if no stops available 
+{
+  x_df = data.frame()
+}
