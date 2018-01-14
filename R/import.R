@@ -60,6 +60,7 @@ for(filename_w_path in files)
     # op <- options(digits.secs=6)
     json_data[[cid]][[tailpos]]$time = strptime(json_data[[cid]][[tailpos]]$time, format = "%H:%M:%OS")#, format = "%H:%M:%OS")
     json_data[[cid]][[tailpos]]$camera = cid
+    json_data[[cid]][[tailpos]]$t_id = tailpos
     
     #Find starting & ending times
     print("Start time: ")
@@ -84,19 +85,14 @@ globalized_json = loc2glob(json_data)
 source("trajectory.R")
 globalized_tracks = create_trajectories(globalized_json)
 
-
-
-source("coordinates.R")
-plot(globalized_tracks[[12]],type="l")
-par(new=TRUE)
-plot(vx,vy)
-
 movpat = c()
+l = c()
 trackCount = 1
 for(tri in 1:(length(globalized_tracks)))
 {
     if(dim(globalized_tracks[[tri]])<10)
       next
+  
     print(paste('track:',tri))
     egtrack = globalized_tracks[[tri]]
     
@@ -110,43 +106,44 @@ for(tri in 1:(length(globalized_tracks)))
       }
       
       movpat[[paste("t0",trackCount,sep="")]] = x_df
-      trackCount=trackCount+1
       globalized_tracks[[tri]]@data$stop = rep(1,dim(globalized_tracks[[tri]])[1])
       for(k in 1:(dim(bpts_df)[1]))  
       {
         globalized_tracks[[tri]]@data$stop[bpts_df[k,1]:bpts_df[k,2]]=0
-        
-        
       }
+      
+      
+      
+      
+      #temp = as.data.frame( globalized_json [[ globalized_tracks[[tri]]@data$misc.camera[1]]][globalized_tracks[[tri]]@data$misc.t_id[1]])
+      
+      
+      temp = as.data.frame(globalized_tracks[[tri]]@data)
+      colnames(temp) = sapply(strsplit(names(temp),"[.]"), `[`, 2)
+      
+      temp = cbind(temp, "x" = globalized_tracks[[tri]]@sp@coords[,1])
+      temp = cbind(temp, "y" = globalized_tracks[[tri]]@sp@coords[,2])
+      temp = cbind(temp, "time" = globalized_tracks[[tri]]@endTime)
+      
+      
+      
+      
+      l[[paste("t0",trackCount,sep="")]] = temp
+      
+      trackCount=trackCount+1
+      
     }
+    
+    
   
 }  
 
 
-l = c()
-trackCount = 1
-
-for(i in 1:(length(globalized_json)-1))
-{
-  
-  
-  for(j in 1:length(globalized_json[[i]]))
-  {
-    if ( dim(globalized_json[[i]][[j]])[1] > 10) {
-      l[paste("t0",trackCount,sep="")] = globalized_json[[i]][j]
-      trackCount=trackCount+1
-    }
-  }
-}
 
 
-for(i in 1:(length(l)-1))
-{
-  l[[i]] = subset( l[[i]], select = c(1,2,4,21,22) )
-}
 
 
-newd = toJSON(l)
+newd = toJSON(l, pretty = T)
 
 writeLines(newd, paste("../statvis","/data/out.json",sep="") )
 
@@ -154,7 +151,8 @@ xxx = c()
 xxx$tracks= movpat
 
 #meta = toJSON(unname(split(xxx, 1:nrow(xxx))))
-meta = toJSON(xxx)
+meta = toJSON(xxx, pretty = T)
+
 writeLines(meta, paste("../statvis","/data/meta.json",sep="") )
 #cond <- sapply(l, function(x) x$time >= "2017-12-29 15:23:00 CET" & x$time <= "2017-12-29 15:23: CET" )
 
@@ -162,6 +160,15 @@ v = data.frame()
 for(i in 1:length(l)) {
   v[i,1] =i
   v[i,2] = dim(l[[i]])[1]
-  v[i,3] = dim(l[[i]])[1]/2
+  v[i,3] = ceiling(dim(l[[i]])[1]/2)
 }
 
+
+
+
+
+
+source("coordinates.R")
+plot(globalized_tracks[[5]],type="l")
+par(new=TRUE)
+plot(vx,vy)

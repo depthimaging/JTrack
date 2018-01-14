@@ -1,6 +1,6 @@
 library(sp)
 
-#egtrack = globalized_tracks[[6]]
+#egtrack = globalized_tracks[[2]]
 
 
 length_egtrack = dim(egtrack)[1]
@@ -28,7 +28,7 @@ bpds = as.data.frame(cbind(egtrack_coords, bool_stop,times))
 
 find_diffs_it = function(xyb)
 {
-  xyb = bpds
+  #xyb = bpds
   flag = TRUE
   breaklist = c()
   x = 1
@@ -69,7 +69,8 @@ find_diffs_it = function(xyb)
 
 bpts = find_diffs_it(bpds)
 
-if(length(bpts)>0)
+# bug in single index bpts
+if(length(bpts)>1)
 {
 
   
@@ -78,20 +79,44 @@ flag = FALSE
 xxx = c()
 k=1
 if(length(bpts)>0) {
-  for(i in 1:length(bpts)) 
+  if(length(bpts)==2)
+  {
+    if(bpts[1] == 1)
     {
-    xxx[k] = bpts[i]
-    k = k+1
-    if(flag == TRUE) {
-      xxx[k] = bpts[i]
-      k = k+1
-      flag = FALSE
+      xxx[1] = bpts[1]
+      xxx[2] = bpts[2]
+      
+      nexti = bpts[2]+1
+      if(nexti<dim(egtrack_coords)[1]) { 
+        xxx[3] = nexti
+        xxx[4] = dim(egtrack_coords)[1]
+      }
+    } else {
+      xxx[1] = 1
+      xxx[2] = bpts[1]-1
+      
+      xxx[3] = bpts[1]
+      xxx[4] = bpts[2]
+      
     }
     
-    if(i %% 2==0 && i<length(bpts)) {
+  } else 
+    {
+    for(i in 1:length(bpts)) 
+      {
       xxx[k] = bpts[i]
-      flag = TRUE
       k = k+1
+      if(flag == TRUE) {
+        xxx[k] = bpts[i]
+        k = k+1
+        flag = FALSE
+      }
+      
+      if(i %% 2==0 && i<length(bpts)) {
+        xxx[k] = bpts[i]
+        flag = TRUE
+        k = k+1
+      }
     }
   }
 }
@@ -180,7 +205,7 @@ for(i in 1:dim(x_df)[1])
     closest_item_x = item[closest_item_index,2]
     closest_item_y = item[closest_item_index,3]
     
-    x_df$item[i] = closest_item_name
+    x_df$item[i] = closest_item_index
     x_df$item_x[i] = closest_item_x
     x_df$item_y[i] = closest_item_y
   }

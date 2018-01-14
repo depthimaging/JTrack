@@ -4,7 +4,7 @@ import  java.lang.Object;
 // Example of Reading from JSON and Visualisation of Visitor Tracks
 // 1.2 / p3.3
 
-String filename="test.json",metadata="meta.json";                    // temp. filename
+String filename="out.json",metadata="meta.json";                    // temp. filename
 Boolean isInit = false;
 JSONObject json,meta;
 
@@ -42,7 +42,9 @@ int pieY = 450;
 //int oY = 850;
 int oX =1188;
 int oY = 670;
-float Ok = 120;
+float Ok = 105;
+float Okx = 120;
+float trx = -90;
 
 int room_oX = 250;
 int room_oY = 30;
@@ -109,9 +111,15 @@ PGraphics pg;
 
 PImage holdimg,attimg,enjimg;
 
+// ---------
+int total_people=0;
+int total_visits=0;
+
+//----------
+
 
 void setup() {
-  loadData();
+  //loadData();
   fullScreen();
   reset();
   // heatmap
@@ -180,19 +188,19 @@ void applyColor() {  // Generate the heat map
   
 }
 
-void pieChart(float diameter, int[] data,boolean moving, int ox, int oy) {
+void pieChart(float diameter, int[] data,boolean stop, int ox, int oy) {
 
   float lastAngle = 4.7;
   float startAngle = lastAngle;
 
   noStroke();
   for (int i = 0; i < data.length; i++) {
-    if (moving==false) {
-      fill(255);
-    } else {
+    if (stop == false) {
       fill(255, 0, 0);
+    } else {
+      fill(255);
     }
-    moving = !moving;
+    stop = !stop;
     if(data[i]==0) {
        data[i] = 1;
     }
@@ -218,8 +226,19 @@ void drawSummary(int curtrkColor) {
   
 }
 
-void drawMov(int total, int nstops, int oX, int oY) {
+void drawMov(int oX, int oY) {
  
+  int total=0;
+  int n_stops = 0,n_moves=0;
+  for(int i=0;i< tmeta.length;i++) {
+    if(tmeta[i][0] == 1 ) {
+      n_stops += tmeta[i][2];
+    } else {
+      n_moves += tmeta[i][2];
+    }
+    total += tmeta[i][1]; 
+  }
+  
   fill(255); 
   text("Total time: ", oX, oY+60);
   text(total+" seconds", oX+200, oY+60);
@@ -227,13 +246,13 @@ void drawMov(int total, int nstops, int oX, int oY) {
   fill(0, 255, 0);
   text("Move: ", oX, oY+130);
   fill(255); 
-  text(total-nstops+ " s", oX+100, oY+130);
+  text(n_moves+ " %", oX+100, oY+130);
 
   fill(255, 0, 0);
   text("Stop: ", oX+200, oY+130);
   fill(255); 
-  text(nstops+ " s", oX+300, oY+130);
-
+  text(n_stops+ " %", oX+300, oY+130);  
+  
   getStopTimes(curTrk,oX,oY);
 }
 
@@ -337,11 +356,12 @@ void draw() {
     stroke(curtrkColor);
 
     try {
-      float xes = x_coord[i][count[i]]*Ok;
+      float xes = x_coord[i][count[i]]*Okx+trx;
       float yes = y_coord[i][count[i]]*Ok;
-
+      // oX+ (x*Ok)
+      
       if (count[i]<lenght[i]-1) 
-        line(oX+xes, oY-yes, oX+(x_coord[i][count[i]+1]*Ok), oY-(y_coord[i][count[i]+1]*Ok));
+        line(oX+xes, oY-yes, oX+(x_coord[i][count[i]+1]*Okx+trx), oY-(y_coord[i][count[i]+1]*Ok));
 
       ellipse(oX+xes, oY-yes, 10, 10);
 
@@ -362,12 +382,42 @@ void draw() {
 
   textSize(28);
   
-
-  int total = lenght[i]/2;
-
-  drawMov(total,nstops,text_oX+10,text_oY+80 );
+  drawMov(text_oX+10,text_oY+80 );
   
-}  
+  drawIndices();
+} 
+
+void drawIndices() {
+ 
+  int items[] = { 0,0,0,0,0 };
+  float itemsx[] = { 0,0,0,0,0 };
+  float itemsy[] = { 0,0,0,0,0 };
+  
+  int itemvisits[] = { 0,0,0,0,0 };
+  
+  int k=0;
+ for(int i=0;i<tmeta.length;i++) {
+   k = (int) tmeta[i][3]-1;
+   if(k==-1) continue;
+   
+   //println("k:= ",k);
+   items[k] = items[k]+(int)tmeta[i][2];
+   
+   itemsx[k] = tmeta[i][4];
+   itemsy[k] = tmeta[i][5];
+ }
+  
+  for(int l=0;l<items.length;l++)
+  {
+    //println("coords: x:",oX+ (itemsx[l]*Ok)," , y: ", oY+ (itemsy[l]*Ok));
+    float holding_power = items[l];
+    fill(255,255,0);
+    ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
+    fill(0);
+    Integer s = int(holding_power);
+    text(s,oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok));
+  }
+}
 
 
 void init1(int noTracks) {
@@ -396,24 +446,24 @@ void getStopTimes(int i,int ox, int oy) {
   int k=0;
   try {    
     int counter = tmeta.length;
-    println("counter= ",counter);
+    //println("counter= ",counter);
     int[] newangles = new int[counter];
     
     for (k=0; k<counter; k++) {
-      println("k= ",k);
+      //println("k= ",k);
       newangles[k] = (int) (tmeta[k][2] * 3.6) ;
     }
   
-    println(" newangles ----- ", newangles[0]);
-    println(" newangles ----- ", newangles[1]);
-    println(" newangles ----- ", newangles[2]);
-    println(" newangles size----- ", newangles.length);
+    //println(" newangles ----- ", newangles[0]);
+    //println(" newangles ----- ", newangles[1]);
+    //println(" newangles ----- ", newangles[2]);
+    //println(" newangles size----- ", newangles.length);
   
-    boolean x = false;
+    boolean is_stop = false;
     if(tmeta[1][0] == 1) {
-      x = true;
+      is_stop = true;
     }
-    pieChart(250, newangles,x,ox,oy);
+    pieChart(250, newangles,is_stop,ox,oy);
   } catch (Exception e){}
 }
 
@@ -424,31 +474,34 @@ void loadMetadata(String trk){
   
   println("  ppppaream: ",trk);
   JSONArray track = s.getJSONArray(trk);  
-  tmeta = new float[track.size()][3];
+  tmeta = new float[track.size()][6];
   
   for (int i = 0; i < track.size(); i++) {
      try {
        tmeta[i][0] = track.getJSONObject(i).getInt("stop");
        tmeta[i][1] = track.getJSONObject(i).getInt("duration");
        tmeta[i][2] = track.getJSONObject(i).getInt("percentage");
+       tmeta[i][3] = track.getJSONObject(i).getInt("item");
+       tmeta[i][4] = track.getJSONObject(i).getFloat("item_x");
+       tmeta[i][5] = track.getJSONObject(i).getFloat("item_y");
        
      } catch (Exception e){
      }
      
   }
 
-  println("ads--------- tmetaaaaa  "+tmeta[1][0]);
-  println("ads--------- tmetaaaaa  "+tmeta[1][1]);
-  println("ads--------- tmetaaaaa  "+tmeta[1][2]);
-  println("ads--------- tmetaaaaa  "+tmeta[1][3]);
-  println("ads--------- tmetaaaaa  "+tmeta[1][4]);
+  //println("ads--------- tmetaaaaa  "+tmeta[1][0]);
+  //println("ads--------- tmetaaaaa  "+tmeta[1][1]);
+  //println("ads--------- tmetaaaaa  "+tmeta[1][2]);
+  //println("ads--------- tmetaaaaa  "+tmeta[1][3]);
+  //println("ads--------- tmetaaaaa  "+tmeta[1][4]);
   
   
-  println("ads--------- tmetaaaaa  "+tmeta[2][0]);
-  println("ads--------- tmetaaaaa  "+tmeta[2][1]);
-  println("ads--------- tmetaaaaa  "+tmeta[2][2]);
-  println("ads--------- tmetaaaaa  "+tmeta[2][3]);
-  println("ads--------- tmetaaaaa  "+tmeta[2][4]);
+  //println("ads--------- tmetaaaaa  "+tmeta[2][0]);
+  //println("ads--------- tmetaaaaa  "+tmeta[2][1]);
+  //println("ads--------- tmetaaaaa  "+tmeta[2][2]);
+  //println("ads--------- tmetaaaaa  "+tmeta[2][3]);
+  //println("ads--------- tmetaaaaa  "+tmeta[2][4]);
   
  } catch (Exception e){}
 }
@@ -464,20 +517,29 @@ void loadData() {
   Set keyset = o.keys();
   Iterator<String> keys = keyset.iterator();
   int j = 0;
-  while ( keys.hasNext() ) 
+  for (int k=1;k<o.size() ;k++) 
   {
     try 
     {
-      String key = (String)keys.next();
+      //String key = (String)keys.next();
+      String key = "t0"+k;
+      //println("key = ",key);
+      
       tracks[j] = o.getJSONArray(key);      
       lenght[j]=tracks[j].size();
       init2(j, lenght[j]);
       for (int i = 0; i < lenght[j]; i++) {
-        moment = tracks[j].getJSONObject(i);                      
+        moment = tracks[j].getJSONObject(i);
         // fist and last time stamps
+        
+        
+        
         if ((i==0) & (j==0)) start_time=moment.getString("time").substring(0, 11);                 
         if ((i==lenght[j]-1) & (j==0)) end_time=moment.getString("time").substring(0, 11);
-        float x=moment.getFloat("x");                                  
+        
+        //println("moment x: ",moment.getFloat("x"));
+        float x=moment.getFloat("x");       
+        
         float y=moment.getFloat("y");
         timestamps[j][i]=moment.getString("time").substring(0, 11);
         h=h+h_height[j][i];                                           
