@@ -409,13 +409,15 @@ void drawIndices() {
   
   for(int l=0;l<items.length;l++)
   {
+    if(itemsx[l]==0 && itemsy[l]==0) continue;
+    
     //println("coords: x:",oX+ (itemsx[l]*Ok)," , y: ", oY+ (itemsy[l]*Ok));
     float holding_power = items[l];
     fill(255,255,0);
     ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
     fill(0);
     Integer s = int(holding_power);
-    text(s,oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok));
+    text(s,oX+ (itemsx[l]*Okx)+trx-14, oY- (itemsy[l]*Ok)+5);
   }
 }
 
