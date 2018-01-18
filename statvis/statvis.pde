@@ -4,7 +4,7 @@ import  java.lang.Object;
 // Example of Reading from JSON and Visualisation of Visitor Tracks
 // 1.2 / p3.3
 
-String filename="out.json",metadata="meta.json";                    // temp. filename
+String filename="out.json",metadata="meta.json",metastats="metastats.json";                    // temp. filename
 Boolean isInit = false;
 JSONObject json,meta;
 
@@ -72,7 +72,7 @@ boolean heatOver = false;
 //
 // normal button
 int norX = 250, norY = heatY;      // Position of square button
-int norW = 170;     // Diameter of rect
+int norW = 190;     // Diameter of rect
 int norH = 35;     // Diameter of rect
 color norColor = color(222);
 color norHighlight = color(100,100,100);
@@ -80,7 +80,7 @@ boolean norOver = false;
 // End ofinterface. buttons
 //---------------------------------
 
-
+boolean agg = false;
 //---------------------------------
 // heatmap
 //---------------------------------
@@ -116,10 +116,16 @@ int total_people=0;
 int total_visits=0;
 
 //----------
+float itemsAgg[][];
+
+float itemsx[] = { 0,0,0,0,0 };
+float itemsy[] = { 0,0,0,0,0 };
+
+
+// ------------------
 
 
 void setup() {
-  //loadData();
   fullScreen();
   reset();
   // heatmap
@@ -127,7 +133,8 @@ void setup() {
   
   pg = createGraphics(heatW, heatH);
   interp_array = new float[heatW][heatH];
-  makeArray();  
+  makeArray(); 
+  
 }
 
 
@@ -142,6 +149,31 @@ void reset() {
   jelly.resize(width, height);
   background(jelly);
   loadData();  
+  
+  
+    
+  //if(curTrk<9) {
+  //  int x = curTrk+1;
+  //  loadMetadata("t0"+x);
+  //}
+  // else {
+  //   int x = curTrk+1;
+     
+  // }
+  if(curTrk>-1) {
+    
+    int x = curTrk + 1;
+    loadMetadata("t0"+x);    
+    drawIndices();
+    
+  } else if ( curTrk == -2) {
+    
+    for(int i =0;i< lenght.length ; i++) {
+      int x = i + 1;
+      loadMetadata("t0"+x);
+      drawIndices();
+    }
+  }
 }
 
 
@@ -216,7 +248,7 @@ void drawSummary(int curtrkColor) {
   fill(255); 
   text("Track #", text_oX, text_oY);
   fill(curtrkColor); 
-  text(curTrk, text_oX+190, text_oY);
+  text(curTrk+1, text_oX+190, text_oY);
   fill(255);
   text(" of "+lenght.length, text_oX+300, text_oY); 
 
@@ -292,45 +324,12 @@ void drawInterface() {
   // normal map button
   fill(norHighlight);  
   if(norOver){
-    fill(norColor); 
+    fill(norColor);
   }
   rect(norX, norY, norW, norH);
   textSize(28);
   fill(255,255,255);
-  text("Traj. Map", norX+10, norY+27);
-  
-  
-  // items panel
-  noFill();
-  int panelX = 20, panelY = 400;
-  rect(panelX, panelY, 800, 470);
-  
-  noStroke();
-  
-  int nItems = 5;
-  for(int j=0;j<nItems;j++) {
-    fill(0,40,200);
-    rect(panelX+4, panelY+6+((j+1)*75), 790, 65);
-    
-    fill(255);
-    ellipse(panelX+40, panelY+36+((j+1)*75), 50, 50);
-    fill(100);
-    text(j+1,panelX+32,panelY+45+((j+1)*75));
-    
-    fill(255);
-    text("20",panelX+150,panelY+45+((j+1)*75));
-    text("20",panelX+400,panelY+45+((j+1)*75));
-    text("20",panelX+650,panelY+45+((j+1)*75));
-    
-    int holdx = 150, holdy = panelY+10, holdw=60, holdh=60;
-    int attx = 400, atty = panelY+10, attw=holdw, atth=holdh;
-    int enjx = 640, enjy = panelY+10, enjw=holdw, enjh=holdh;
-    
-    image(attimg, attx, atty, attw, atth);
-    image(holdimg, holdx, holdy, holdw, holdh);
-    image(enjimg, enjx, enjy, enjw, enjh);
-
-  }
+  text("Aggregation", norX+10, norY+27);
 }
 
 void draw() {
@@ -351,7 +350,7 @@ void draw() {
   //color trkColor = color( (i%3)* 255, ((i+1)%3) * 255, ((i+2)%3) * 255 );
 
   fill(curtrkColor);
-  if (count[i]<lenght[i] && !showHeatMap) {
+  if (i != -2 && count[i]<lenght[i] && !showHeatMap) {
 
     stroke(curtrkColor);
 
@@ -384,41 +383,97 @@ void draw() {
   
   drawMov(text_oX+10,text_oY+80 );
   
-  drawIndices();
+  
 } 
-
+int holdingAgg = 0;
 void drawIndices() {
  
   int items[] = { 0,0,0,0,0 };
-  float itemsx[] = { 0,0,0,0,0 };
-  float itemsy[] = { 0,0,0,0,0 };
+  // items panel //<>//
+  noFill();
+  int panelX = 20, panelY = 400;
   
-  int itemvisits[] = { 0,0,0,0,0 };
+  //rect(panelX, panelY, 800, 470);
+  noStroke();
   
+    
   int k=0;
  for(int i=0;i<tmeta.length;i++) {
    k = (int) tmeta[i][3]-1;
    if(k==-1) continue;
    
    //println("k:= ",k);
-   items[k] = items[k]+(int)tmeta[i][2];
-   
+   items[k] = (int)tmeta[i][2];
+     
    itemsx[k] = tmeta[i][4];
    itemsy[k] = tmeta[i][5];
  }
+ 
+ 
+  //holdingAgg = 0;
   
   for(int l=0;l<items.length;l++)
   {
-    if(itemsx[l]==0 && itemsy[l]==0) continue;
+    //if(itemsx[l]==0 && itemsy[l]==0) continue;
     
     //println("coords: x:",oX+ (itemsx[l]*Ok)," , y: ", oY+ (itemsy[l]*Ok));
     float holding_power = items[l];
+   
+    
+    
     fill(255,255,0);
-    ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
-    fill(0);
-    Integer s = int(holding_power);
-    text(s,oX+ (itemsx[l]*Okx)+trx-14, oY- (itemsy[l]*Ok)+5);
+    if(agg == true) {
+      println("dfghjklkjkhg " ,itemsAgg[l][1]*5);
+      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][2]*5, (int)itemsAgg[l][2]*5);
+    } else {
+      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
+    }
+    //fill(0);
+    //Integer s = int(holding_power);
+    //text(s,oX+ (itemsx[l]*Okx)+trx-14, oY- (itemsy[l]*Ok)+5);
+    
+    
+    // in table
+    
+    fill(0,40,200);
+    rect(panelX+4, panelY+6+((l+1)*75), 700, 65);
+    
+    fill(255);
+    ellipse(panelX+40, panelY+36+((l+1)*75), 50, 50);
+    fill(100);
+    text(l+1,panelX+32,panelY+45+((l+1)*75));
+    
+    fill(255);
+    
+    
+    
+    if(agg == true) {
+    
+      text(itemsAgg[l][1],panelX+320,panelY+45+((l+1)*75));
+      text(itemsAgg[l][2],panelX+120,panelY+45+((l+1)*75));
+    } else {
+      text(holding_power,panelX+320,panelY+45+((l+1)*75));
+      if(holding_power>0) {
+        text("100",panelX+ 150,panelY+45+((l+1)*75));
+      } else {
+        text("0",panelX+150,panelY+45+((l+1)*75));
+      }
+      
+    }
+    
+    text("20",panelX+600,panelY+45+((l+1)*75));
+    
   }
+  
+  int attx = 150, holdy = panelY+10, holdw=60, holdh=60;
+  int holdx = 350, atty = panelY+10, attw=holdw, atth=holdh;
+  int enjx = 600, enjy = panelY+10, enjw=holdw, enjh=holdh;
+  
+  image(attimg, attx, atty, attw, atth);
+  image(holdimg, holdx, holdy, holdw, holdh);
+  image(enjimg, enjx, enjy, enjw, enjh);
+    
+    
 }
 
 
@@ -491,10 +546,14 @@ void loadMetadata(String trk){
      }
      
   }
+  
+   //<>//
+  
+  
 
-  //println("ads--------- tmetaaaaa  "+tmeta[1][0]);
-  //println("ads--------- tmetaaaaa  "+tmeta[1][1]);
-  //println("ads--------- tmetaaaaa  "+tmeta[1][2]);
+  //println("ads--------- tmetaaaaa  "+ itemsAgg[1][0]);
+  //println("ads--------- tmetaaaaa  "+itemsAgg[1][1]);
+  //println("ads--------- tmetaaaaa  "+itemsAgg[1][2]);
   //println("ads--------- tmetaaaaa  "+tmeta[1][3]);
   //println("ads--------- tmetaaaaa  "+tmeta[1][4]);
   
@@ -558,6 +617,35 @@ void loadData() {
       j++;
     } catch (Exception e) {}
   }
+  
+  
+  JSONArray aggstats = loadJSONArray(metastats);
+  
+  itemsAgg = new float[aggstats.size()][3];
+  
+  
+  
+  for(int i=0;i<aggstats.size();i++) {
+    int itemIndex = aggstats.getJSONObject(i).getInt("item");
+    float holding = aggstats.getJSONObject(i).getInt("holding");
+    float attention = aggstats.getJSONObject(i).getInt("attention");
+    
+    itemsAgg[i][0] = itemIndex;
+    itemsAgg[i][1] = holding;
+    itemsAgg[i][2] = attention;    
+  }
+  
+    
+  
+  //for (int i = 0; i < aggitems.size(); i++) {
+  //  try {
+  //    println("aggitems.getJSONObject(i).getInt(item)=",aggitems.getJSONObject(i).getInt("item"));
+  //    itemsAgg[i][0] = aggitems.getJSONObject(i).getInt("item");
+  //    itemsAgg[i][1] = aggitems.getJSONObject(i).getInt("holding");
+  //    itemsAgg[i][2] = aggitems.getJSONObject(i).getInt("attention");      
+  //  } catch (Exception e){}
+  //}
+  
 }
 
 
@@ -616,27 +704,22 @@ void mousePressed() {
     curTrk = 0;
   }
   
-  
-  if(curTrk<9) {
-    int x = curTrk+1;
-    loadMetadata("t0"+x);
-  }
-   else {
-     int x = curTrk+1;
-     loadMetadata("t0"+curTrk);
-   }
-   
+
    if (heatOver) {
-     showHeatMap = true;
+     showHeatMap = false;
      doreset = true;
+     agg = false;
    }
    
    if (norOver) {
      showHeatMap = false;
+     agg = true;
      doreset = true;
+     curTrk = -2;
    }
   
   if(doreset == true) {
     reset();
   }
+  //drawIndices();
 }
