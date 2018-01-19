@@ -140,8 +140,8 @@ for(tri in 1:(length(globalized_tracks)))
 }  
 
 
-stats = c(0,0,0,0,0,0)
-visits = c(0,0,0,0,0,0)
+stats = c(0,0,0,0,0,0,0)
+visits = c(0,0,0,0,0,0,0)
 
 
 for( trackCount in 1:length(movpat)){
@@ -172,7 +172,7 @@ writeLines(meta, paste("../statvis","/data/meta.json",sep="") )
 
 
 
-agg = data.frame("item" = c(0,1,2,3,4,5) ,"holding"= stats,"attention"=visits)
+agg = data.frame("item" = c(0,1,2,3,4,5,6) ,"holding"= stats,"attention"=visits)
 metastats = toJSON(agg, pretty = T)
 
 writeLines(metastats, paste("../statvis","/data/metastats.json",sep="") )
@@ -197,11 +197,11 @@ plot(vx,vy)
 
 
 
-x = data.frame()
-for(i in 1:length(movpat)){
-  x = rbind(x,movpat[[i]])
-}
-sum(x$percentage)
-sum(x$duration)
-sum(x[x$item %in% c('5') ])
-x["item"]
+#x = data.frame()
+#for(i in 1:length(movpat)){
+#  x = rbind(x,movpat[[i]])
+#}
+#sum(x$percentage)
+#sum(x$duration)
+#sum(x[x$item %in% c('5') ])
+#x["item"]

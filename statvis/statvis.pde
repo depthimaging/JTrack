@@ -34,7 +34,7 @@ String start_time, end_time;                    // Starting and ending time of a
 int text_oX = 30;
 int text_oY = 70;
 
-int pieX = 200;
+int pieX = 180;
 int pieY = 450;
 
 
@@ -71,7 +71,7 @@ color heatHighlight = color(100,100,100);
 boolean heatOver = false;
 //
 // normal button
-int norX = 250, norY = heatY;      // Position of square button
+int norX = 220, norY = heatY;      // Position of square button
 int norW = 190;     // Diameter of rect
 int norH = 35;     // Diameter of rect
 color norColor = color(222);
@@ -118,8 +118,8 @@ int total_visits=0;
 //----------
 float itemsAgg[][];
 
-float itemsx[] = { 0,0,0,0,0 };
-float itemsy[] = { 0,0,0,0,0 };
+float itemsx[] = { 0,0,0,0,0,0,0 };
+float itemsy[] = { 0,0,0,0,0,0,0 };
 
 
 // ------------------
@@ -170,8 +170,10 @@ void reset() {
     
     for(int i =0;i< lenght.length ; i++) {
       int x = i + 1;
+      background(jelly);
       loadMetadata("t0"+x);
       drawIndices();
+      
     }
   }
 }
@@ -236,7 +238,7 @@ void pieChart(float diameter, int[] data,boolean stop, int ox, int oy) {
     if(data[i]==0) {
        data[i] = 1;
     }
-    arc(ox+600, oy+30, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
+    arc(ox+560, oy+30, diameter, diameter, lastAngle, lastAngle+radians(data[i]));
 
     lastAngle += radians(data[i]);
   }
@@ -388,7 +390,7 @@ void draw() {
 int holdingAgg = 0;
 void drawIndices() {
  
-  int items[] = { 0,0,0,0,0 };
+  int items[] = { 0,0,0,0,0,0,0 };
   // items panel //<>//
   noFill();
   int panelX = 20, panelY = 400;
@@ -413,26 +415,7 @@ void drawIndices() {
   //holdingAgg = 0;
   
   for(int l=0;l<items.length;l++)
-  {
-    //if(itemsx[l]==0 && itemsy[l]==0) continue;
-    
-    //println("coords: x:",oX+ (itemsx[l]*Ok)," , y: ", oY+ (itemsy[l]*Ok));
-    float holding_power = items[l];
-   
-    
-    
-    fill(255,255,0);
-    if(agg == true) {
-      println("dfghjklkjkhg " ,itemsAgg[l][1]*5);
-      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][2]*5, (int)itemsAgg[l][2]*5);
-    } else {
-      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
-    }
-    //fill(0);
-    //Integer s = int(holding_power);
-    //text(s,oX+ (itemsx[l]*Okx)+trx-14, oY- (itemsy[l]*Ok)+5);
-    
-    
+  {    
     // in table
     
     fill(0,40,200);
@@ -444,14 +427,13 @@ void drawIndices() {
     text(l+1,panelX+32,panelY+45+((l+1)*75));
     
     fill(255);
-    
-    
-    
+    float holding_power = items[l];
     if(agg == true) {
     
       text(itemsAgg[l][1],panelX+320,panelY+45+((l+1)*75));
       text(itemsAgg[l][2],panelX+120,panelY+45+((l+1)*75));
     } else {
+      
       text(holding_power,panelX+320,panelY+45+((l+1)*75));
       if(holding_power>0) {
         text("100",panelX+ 150,panelY+45+((l+1)*75));
@@ -462,7 +444,21 @@ void drawIndices() {
     }
     
     text("20",panelX+600,panelY+45+((l+1)*75));
+   
+    if(itemsx[l]==0 && itemsy[l]==0) continue;
     
+    
+    if(agg == true) {
+      println("dfghjklkjkhg " ,itemsAgg[l][1]*5);
+      fill(0,100,255, 20);
+      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][1]*2, (int)itemsAgg[l][1]*2);
+      fill(255,255,0, 120);
+      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][2]*5, (int)itemsAgg[l][2]*5);
+    } else {
+      fill(255,255,0, 120);
+      ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), holding_power, holding_power);
+    }
+
   }
   
   int attx = 150, holdy = panelY+10, holdw=60, holdh=60;
