@@ -114,6 +114,7 @@ for(tri in 1:(length(globalized_tracks)))
         globalized_tracks[[tri]]@data$stop[bpts_df[k,1]:bpts_df[k,2]]=0
       }
         
+      ##globalized_tracks[[tri]]@data$speed = 
       #movpat[[paste("t0",trackCount,sep="")]][[8]][0]
       
       #temp = as.data.frame( globalized_json [[ globalized_tracks[[tri]]@data$misc.camera[1]]][globalized_tracks[[tri]]@data$misc.t_id[1]])
@@ -125,6 +126,7 @@ for(tri in 1:(length(globalized_tracks)))
       temp = cbind(temp, "x" = globalized_tracks[[tri]]@sp@coords[,1])
       temp = cbind(temp, "y" = globalized_tracks[[tri]]@sp@coords[,2])
       temp = cbind(temp, "time" = globalized_tracks[[tri]]@endTime)
+      temp = cbind(temp, "speed" = c( 0 , globalized_tracks[[tri]]@connections$speed) )
       
       
       

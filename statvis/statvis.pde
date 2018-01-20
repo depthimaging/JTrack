@@ -23,6 +23,7 @@ float[][] y_coord;
 int[][] stops;
 float[][] h_height;
 String[][] timestamps;
+float[][] speed;
 
 int[] lenght;
 float[] h_mid;
@@ -261,7 +262,8 @@ void drawSummary(int curtrkColor) {
 }
 
 void drawMov(int oX, int oY) {
- 
+  try {
+    
   int total=0;
   int n_stops = 0,n_moves=0;
   for(int i=0;i< tmeta.length;i++) {
@@ -288,6 +290,8 @@ void drawMov(int oX, int oY) {
   text(n_stops+ " %", oX+300, oY+130);  
   
   getStopTimes(curTrk,oX,oY);
+  
+  } catch (Exception e) {}
 }
 
 void drawInterface() {
@@ -351,19 +355,21 @@ void draw() {
 
   //color trkColor = color( (i%3)* 255, ((i+1)%3) * 255, ((i+2)%3) * 255 );
 
-  fill(curtrkColor);
+  
   if (i != -2 && count[i]<lenght[i] && !showHeatMap) {
-
-    stroke(curtrkColor);
-
+    
     try {
       float xes = x_coord[i][count[i]]*Okx+trx;
       float yes = y_coord[i][count[i]]*Ok;
       // oX+ (x*Ok)
-      
+  
+      stroke(speed[i][count[i]]*255,40*speed[i][count[i]],0);
+      fill(speed[i][count[i]]*255,40*speed[i][count[i]],0);
       if (count[i]<lenght[i]-1) 
         line(oX+xes, oY-yes, oX+(x_coord[i][count[i]+1]*Okx+trx), oY-(y_coord[i][count[i]+1]*Ok));
 
+      //println("color i,count[i] : ",speed[i][count[i]]," , i=",i," , count[i]= ",count[i]);      
+      noStroke();
       ellipse(oX+xes, oY-yes, 10, 10);
 
       count[i]++;
@@ -450,7 +456,7 @@ void drawIndices() {
     
     if(agg == true) {
       println("dfghjklkjkhg " ,itemsAgg[l][1]*5);
-      fill(0,100,255, 20);
+      fill(255,0,0, 70);
       ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][1]*2, (int)itemsAgg[l][1]*2);
       fill(255,255,0, 120);
       ellipse(oX+ (itemsx[l]*Okx)+trx, oY- (itemsy[l]*Ok), (int)itemsAgg[l][2]*5, (int)itemsAgg[l][2]*5);
@@ -484,6 +490,8 @@ void init1(int noTracks) {
   lenght=new int[noTracks];
   h_mid=new float[noTracks];
   angles = new int[noTracks][];
+  
+  speed = new float[noTracks][];
 }
 
 void init2(int i, int no_elements) {
@@ -493,6 +501,7 @@ void init2(int i, int no_elements) {
   stops[i]=new int[no_elements];
   h_height[i]=new float[no_elements];
   timestamps[i]=new String[no_elements];
+  speed[i] = new float[no_elements];
 }
 
 void getStopTimes(int i,int ox, int oy) {
@@ -604,9 +613,11 @@ void loadData() {
         y_coord[j][i]=y;  
         try {
           stops[j][i] = moment.getInt("stop");
+          
         } 
         catch(Exception e) {
         }
+        speed[j][i] = moment.getFloat("speed");
       }
       h_mid[j]=h/lenght[j]; 
       h=0;                                      
